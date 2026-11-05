@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct{
     char name[216];
@@ -11,12 +13,14 @@ typedef enum{
     DISPLAY = 1 , SEARCH = 2 , ADD = 3 ,EDIT = 4 , DELETE = 5 , EXIT = 6
 }Choice;
 
+void extractContacts(Contact *contacts ,int *pSize); // gets contacts stored in contacts.txt and stores them into array.
+void pushContacts(Contact *contacts ,int *pSize); // takes the contacts stored in the array and adds them to contacts.txt
 
-void addContact(Contact *contacts); // adds new contact to storage.
+void addContact(Contact *contacts , int *pSize); // adds new contact to storage.
 void displayContacts(); // displays all contacts in formatted order
-void searchContact(Contact *contacts); // searches by name
-void editContact(Contact *contacts); // can edit one or more properties
-void deleteContact(Contact *contacts); //number and name incase 2 contacts have same name
+void searchContact(Contact *contacts , int *pSize); // searches by name
+void editContact(Contact *contacts , int *pSize); // can edit one or more properties
+void deleteContact(Contact *contacts , int *pSize); //number and name incase 2 contacts have same name
 
 // Goals - make following functions work , eliminate duplication of contact numbers
 
@@ -50,6 +54,8 @@ void managerApp(){
     Choice choice = 0; 
 
     Contact *contacts = NULL; // this pointer will be passed on to functions to operate on it 
+    int size = 0; // Since contacts is a pointer and not an array , we have to keep a track of the size (passing pointer to size wherever needed)
+    
 
 
     do{
@@ -66,27 +72,30 @@ void managerApp(){
         switch(choice){
             case DISPLAY:
 
-                displayContacts();
+                extractContacts(contacts , &size);
+                displayContacts(contacts , &size);
                 break;
 
-            // case SEARCH:
+            case SEARCH:
 
-            //     searchContact(contacts);
-            //     break;
-            
+                extractContacts(contacts , &size);
+                searchContact(contacts);
+                break;
+
             case ADD:
-
-                addContact(contacts);
+                addContact(contacts , &size);
                 break;
 
-            // case EDIT:
+            case EDIT:
 
-            //     editContact(contacts);
-            //     break;
+                extractContacts(contacts , &size);
+                editContact(contacts , &size);
+                break;
 
             // case DELETE:
 
-            //     deleteContact(contacts);
+            //     extractContacts(contacts , &size);
+            //     deleteContact(contacts , &size);
             //     break;
 
             case EXIT:
@@ -101,33 +110,105 @@ void managerApp(){
 
     }while(managerActive);
 
-}
 
-void displayContacts(){
-
-    FILE *pFile = fopen("Contact-Manager/contacts.txt" , "r");
-
-    char buffer[1024] = "";
-    const int countryCode = 91; // can be modified from here
-
-    bool hasContacts = (fgets(buffer , sizeof(buffer) , pFile) != NULL );
-
-    if(!hasContacts){
-        printf("\n** No Contacts Saved **\n\n");
-    }else{
-        printf("---------------------------------------------\n\n");
-        printf("%s\n" , buffer);
-    
-
-        while(fgets(buffer , sizeof(buffer) , pFile) != NULL){
-            printf("---------------------------------------------\n\n");
-            printf("%s\n" , buffer);
-        
-        }
-        printf("---------------------------------------------\n");
-        printf("\n***END***\n\n");
+    // freeing memory
+    if(contacts != NULL){
+        free(contacts);
+        contacts = NULL;
     }
 
+}
 
+
+
+void searchContact(Contact *contacts , int *pSize){
+
+    char name[216] = "";
+    printf("Search Contact Name : ")
+    scanf("%s" , name);
+    getchar();
+
+    const int SIZE = *pSize;
+
+    for (int i = 0 ; i < SIZE; i++){
+        if(contacts[i].name == name){
+            printf("\n=== FOUND CONTACT ===\n\n");
+
+            printf("---------------------------------------------------\n\n");
+            printf("Name : %s\nNumber : %s\nEmail : %s\n\n" , contacts[i].name , contacts[i].number , contacts[i].email);
+
+        }
+    }
+
+    printf("---------------------------------------------------\n\n");
+    printf("\n\n***END***\n\n");
+
+
+
+}
+
+
+
+void addContact(Contact *contacts , int *pSize){
+
+    char name[216] = "";
+    char number[15] = "";
+    char email[216] = "";
+
+    printf("Enter the Name : \n");
+    scanf("%s" , name);
+    getchar();
+    printf("Enter the Number : \n");
+    scanf("%s" , number);
+    getchar();
+    printf("Enter the Email : \n");
+    scanf("%s" , email);
+    getchar();
+
+    int newPos = *pSize;
+
+    Contact *temp = realloc(contacts , (newPos+1 * sizeof(contacts[0])));
+
+    if(temp == NULL){
+        printf("Could Not Add Contact , Reallocation Failed.\n");
+    }else{
+        contacts = temp;
+        temp = NULL;
+
+        strcpy(contacts[newPos].name , name);
+        strcpy(contacts[newPos].number , number);
+        strcpy(contacts[newPos].email , email);
+
+        (*pSize)++; //Updating size of the array
+
+        // Pushing the updates to the text file.
+        pushContacts(contacts , pSize);
+    }
+
+    
+
+}
+
+
+void displayContacts(Contact *contacts , int *pSize){
+
+    const int SIZE = *pSize;
+
+    if(SIZE == 0){
+        printf("\nNo Contacts Found.\n");
+    }
+
+    else{
+
+        for(int i= 0; i < SIZE; i++ ){
+
+            printf("---------------------------------------------------\n\n");
+            printf("Name : %s\nNumber : %s\nEmail : %s\n\n" , contacts[i].name , contacts[i].number , contacts[i].email);
+
+        }
+
+        printf("---------------------------------------------------\n\n");
+        printf("\n\n***END***\n\n");
+    }
 
 }

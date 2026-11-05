@@ -1,0 +1,5 @@
+Application -> Array -> File 
+File -> Array -> Application
+
+Our dynamic array acts as an intermediate between application and the file , 
+preventing us from directly pushing data to file or directly accessing data from the file.
