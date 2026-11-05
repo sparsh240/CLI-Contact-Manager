@@ -119,7 +119,17 @@ void managerApp(){
 
 }
 
+
+
+
 void editContact(Contact *contacts , int *pSize){
+
+    const int SIZE = *pSize;
+
+    if(SIZE == 0){
+        printf("\nNo Contacts Found.\n");
+        return;
+    }
 
     char name[216] = "";
     char number[15] = "";
@@ -131,10 +141,46 @@ void editContact(Contact *contacts , int *pSize){
     scanf("%s" , number);
     getchar();
 
-    const int SIZE = *pSize;
+    
 
     for(int i = 0 ; i < SIZE ; i++){
-        
+
+        if(contacts[i].name == name && contacts[i].number == number ){
+            int choice = 0;
+            printf("\n***What would you like to edit ?***\n");
+            printf("*[1] Name\n*[2] Number\n*[3] Email\n")
+            printf("Select one of the choices : ");
+            scanf("%d" , choice);
+            getchar(); 
+
+            switch(choice){
+                case 1 : 
+                    
+                    printf("Enter new name : ");
+                    scanf("%s" , contacts[i].name);
+                    
+                case 2 : 
+                    
+                    printf("Enter new number : ");
+                    scanf("%s" , contacts[i].number);
+                    
+                case 3 : 
+                    
+                    printf("Enter new email : ");
+                    scanf("%s" , contacts[i].email);
+                
+                default :
+                    printf("Invalid Choice.");
+                    
+            }
+
+            // contacts in the array updated
+
+            pushContacts(contacts , pSize); // saving
+            return;
+        }
+
+
     }
 
 
@@ -144,6 +190,13 @@ void editContact(Contact *contacts , int *pSize){
 
 
 void deleteContact(Contact *contacts , int *pSize){
+
+    const int SIZE = *pSize;
+
+    if(SIZE == 0){
+        printf("\nNo Contacts Found.\n");
+        return;
+    }
 
     char name[216] = "";
     char number[15] = "";
@@ -155,7 +208,7 @@ void deleteContact(Contact *contacts , int *pSize){
     scanf("%s" , number);
     getchar();
 
-    const int SIZE = *pSize;
+    
     
 
     int i = 0;
@@ -183,26 +236,37 @@ void deleteContact(Contact *contacts , int *pSize){
 
             (*pSize)--; // updating size 
 
-            break;
+            pushContacts(contacts , pSize);
+            printf("\n*** Contact Deleted ***\n\n"); 
+
+
+            return;
         }
 
         i++;
 
     }
 
-    pushContacts(contacts , pSize);
-    printf("\n*** Contact Deleted ***\n\n"); 
+    printf("Contact Not Found.\n");
 
+    
 }
 
 void searchContact(Contact *contacts , int *pSize){
+
+    const int SIZE = *pSize;
+
+    if(SIZE == 0){
+        printf("\nNo Contacts Found.\n");
+        return;
+    }
 
     char name[216] = "";
     printf("Search Contact Name : ");
     scanf("%s" , name);
     getchar();
 
-    const int SIZE = *pSize;
+    
 
     for (int i = 0 ; i < SIZE; i++){
         if(contacts[i].name == name){
@@ -270,6 +334,7 @@ void displayContacts(Contact *contacts , int *pSize){
 
     if(SIZE == 0){
         printf("\nNo Contacts Found.\n");
+        return;
     }
 
     else{
