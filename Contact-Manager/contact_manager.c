@@ -119,7 +119,82 @@ void managerApp(){
 
 }
 
+void extractContacts(Contact *contacts ,int *pSize){
 
+    if(contacts != NULL){ // freeing if not free
+        free(contacts);
+        contacts = NULL;
+        *pSize = 0;
+    }
+
+    FILE *pFile = fopen("Contact-Manager/contacts.txt" , "r");
+    char buffer[500]; 
+
+    contacts = malloc(sizeof(Contact));
+    if(contacts == NULL){
+        printf("Allocation Initialization failed\n");
+        return;
+    }
+
+    int *temp = NULL; // used for realloc
+    int currentPoint = 0;
+
+
+    while(fgets(buffer , sizeof(buffer) , pFile) != NULL){
+
+
+        buffer[strlen(buffer) - 1 ] = '\0'; // converting the new lines to \0 to not cause issues in input buffer and weird behavior
+        
+        // saving to array
+        sscanf(buffer , "216[^,],15[^,],216[^,]" , contacts[currentPoint].name ,contacts[currentPoint].number ,contacts[currentPoint].email);
+        currentPoint++; 
+
+        // reallocating for next contact
+        temp = realloc(contacts , (currentPoint+1)*sizeof(Contact));
+        if(temp == NULL){
+            printf("Realloc Failed, Resetting Array.\n");
+            contacts = NULL;
+            *pFile = 0;
+            break;
+
+        }
+        contacts = temp;
+        temp = NULL;
+    }
+
+
+    // reallocating to remove the extra memory added in last iteration
+    temp = realloc(contacts , (currentPoint)*sizeof(Contact));
+    if(temp == NULL){
+        printf("Realloc Failed , Extra memory allocated\n");
+    }
+    contacts = temp;
+    temp = NULL;
+    *pSize = currentPoint; // updating to new size
+    
+
+    fclose(pFile);
+}
+
+void pushContacts(Contact *contacts ,int *pSize){
+
+
+    const int SIZE = *pSize;
+
+    if(SIZE == 0){
+        printf("Not Pushed , Array Size = 0\n");
+        return;
+    }
+
+    FILE *pFile = fopen("Contact-Manager/contacts.txt","w");
+
+    for(int i = 0 ; i < SIZE; i++){
+        fprintf(pFile , "%s,%s,%s\n" , contacts[i].name, contacts[i].number , contacts[i].email);
+    }
+
+    fclose(pFile);
+
+}
 
 
 void editContact(Contact *contacts , int *pSize){
@@ -231,6 +306,10 @@ void deleteContact(Contact *contacts , int *pSize){
 
             // reallocating to a smaller size (removing last element after shifts)
             Contact *temp = realloc(contacts , SIZE-1 * sizeof(contacts[0]));
+            if(temp == NULL){
+                printf("Realloc failed , Deletion successful but Last contact repeated\n");
+                return;
+            }
             contacts = temp;
             temp = NULL;
 
