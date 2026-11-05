@@ -19,7 +19,7 @@ void pushContacts(Contact *contacts ,int *pSize); // takes the contacts stored i
 void addContact(Contact *contacts , int *pSize); // adds new contact to storage.
 void displayContacts(); // displays all contacts in formatted order
 void searchContact(Contact *contacts , int *pSize); // searches by name
-void editContact(Contact *contacts , int *pSize); // can edit one or more properties
+void editContact(Contact *contacts , int *pSize); // can edit one or more properties 
 void deleteContact(Contact *contacts , int *pSize); //number and name incase 2 contacts have same name
 
 // Goals - make following functions work , eliminate duplication of contact numbers
@@ -79,7 +79,7 @@ void managerApp(){
             case SEARCH:
 
                 extractContacts(contacts , &size);
-                searchContact(contacts);
+                searchContact(contacts , &size);
                 break;
 
             case ADD:
@@ -92,11 +92,11 @@ void managerApp(){
                 editContact(contacts , &size);
                 break;
 
-            // case DELETE:
+            case DELETE:
 
-            //     extractContacts(contacts , &size);
-            //     deleteContact(contacts , &size);
-            //     break;
+                extractContacts(contacts , &size);
+                deleteContact(contacts , &size);
+                break;
 
             case EXIT:
 
@@ -119,12 +119,86 @@ void managerApp(){
 
 }
 
+void editContact(Contact *contacts , int *pSize){
 
+    char name[216] = "";
+    char number[15] = "";
+
+    printf("Enter Contact Name To Edit : ");
+    scanf("%s" , name);
+    getchar();
+    printf("Enter Contact Number To Edit : ");
+    scanf("%s" , number);
+    getchar();
+
+    const int SIZE = *pSize;
+
+    for(int i = 0 ; i < SIZE ; i++){
+        
+    }
+
+
+
+
+}
+
+
+void deleteContact(Contact *contacts , int *pSize){
+
+    char name[216] = "";
+    char number[15] = "";
+
+    printf("Enter Contact Name To Delete : ");
+    scanf("%s" , name);
+    getchar();
+    printf("Enter Contact Number To Delete : ");
+    scanf("%s" , number);
+    getchar();
+
+    const int SIZE = *pSize;
+    
+
+    int i = 0;
+
+    while( i < SIZE){
+
+        if(contacts[i].name == name && contacts[i].number == number ){
+
+            printf("\n**Contact Found**\n\n");
+
+            // moving all next contacts one step back
+            while(i < (SIZE - 1) ){
+
+                strcpy(contacts[i].name , contacts[i+1].name);
+                strcpy(contacts[i].number , contacts[i+1].number);
+                strcpy(contacts[i].email , contacts[i+1].email);
+
+                i++;
+            }
+
+            // reallocating to a smaller size (removing last element after shifts)
+            Contact *temp = realloc(contacts , SIZE-1 * sizeof(contacts[0]));
+            contacts = temp;
+            temp = NULL;
+
+            (*pSize)--; // updating size 
+
+            break;
+        }
+
+        i++;
+
+    }
+
+    pushContacts(contacts , pSize);
+    printf("\n*** Contact Deleted ***\n\n"); 
+
+}
 
 void searchContact(Contact *contacts , int *pSize){
 
     char name[216] = "";
-    printf("Search Contact Name : ")
+    printf("Search Contact Name : ");
     scanf("%s" , name);
     getchar();
 
