@@ -47,7 +47,7 @@ int managerApp(){
     bool managerActive = true;
     Choice choice = 0; 
 
-    Contact *contacts = NULL; // this pointer will be passed on to functions to operate on it 
+    Contact *contacts = NULL; // this pointer and its pointer will be passed on to functions to operate on it 
     int size = 0; // Since contacts is a pointer and not an array , we have to keep a track of the size (passing pointer to size wherever needed)
     
 
