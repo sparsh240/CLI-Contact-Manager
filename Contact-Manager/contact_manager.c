@@ -15,7 +15,7 @@ typedef enum{
 
 // Double pointers where we need to modify the pointer to the array (realloc , malloc); (POINTERS ARE PASS BY VALUE SO DOUBLE POINTERS NEEDED)
 
-void extractContacts(Contact **contacts ,int *pSize); // gets contacts stored in contacts.txt and stores them into array.
+int extractContacts(Contact **contacts ,int *pSize); // gets contacts stored in contacts.txt and stores them into array.
 void pushContacts(Contact *contacts ,int *pSize); // takes the contacts stored in the array and adds them to contacts.txt
 
 void addContact(Contact **contacts , int *pSize); // adds new contact to storage.
@@ -26,23 +26,23 @@ void deleteContact(Contact **contacts , int *pSize); //number and name incase 2 
 
 
         
-void managerApp();
+int managerApp();
 
 
 int main(){
 
-    managerApp();
+    int exitStatus = managerApp();
 
-    return 0;
+    return exitStatus;
 }
 
 
 
-void managerApp(){
+int managerApp(){
 
-    printf("______________________________\n\n");
+    printf("==============================\n");
     printf("  Welcome To Contact Manager  \n");
-    printf("______________________________\n");
+    printf("==============================\n\n");
 
     bool managerActive = true;
     Choice choice = 0; 
@@ -53,43 +53,45 @@ void managerApp(){
 
 
     do{
-        printf("[1]* Display Contacts\n");
-        printf("[2]* Search Contact\n");
-        printf("[3]* Add Contact\n");
-        printf("[4]* Edit Contact\n");
-        printf("[5]* Delete Contact\n");
-        printf("[6]* Exit\n\n");
-        printf("== What would you like to do? [1/2/3/4/5/6] == : ");
+        printf("[*1] - Display Contacts\n");
+        printf("[*2] - Search Contact\n");
+        printf("[*3] - Add Contact\n");
+        printf("[*4] - Edit Contact\n");
+        printf("[*5] - Delete Contact\n");
+        printf("[*6] - Exit\n\n");
+        printf("==============================\n");
+        printf("*** Select an option (1 to 6) : ");
         scanf("%u",&choice);
         getchar(); // eliminating the \n in input buffer
 
+        int extractionError = extractContacts(&contacts , &size);
+        if (extractionError){
+            return extractionError;
+        }
+
         switch(choice){
             case DISPLAY:
-
-                extractContacts(&contacts , &size);
+            
                 displayContacts(contacts , &size);
                 break;
 
             case SEARCH:
-
-                extractContacts(&contacts , &size);
+                
                 searchContact(contacts , &size);
                 break;
 
             case ADD:
-                extractContacts(&contacts , &size); 
+                 
                 addContact(&contacts , &size);
                 break;
 
             case EDIT:
-
-                extractContacts(&contacts , &size);
+                
                 editContact(contacts , &size);
                 break;
 
             case DELETE:
 
-                extractContacts(&contacts , &size);
                 deleteContact(&contacts , &size);
                 break;
 
@@ -98,10 +100,11 @@ void managerApp(){
                 managerActive = false;
                 free(contacts);
                 contacts = NULL;
+                printf("\n\n***THANK YOU***\n\n");
                 break;
 
             default:
-                printf("\n***Invalid Choice! Retry***\n\n");
+                printf("\n*** Invalid Choice! select from [ 1 | 2 | 3 | 4 | 5 | 6 ] ***\n\n");
 
         }
 
@@ -114,16 +117,17 @@ void managerApp(){
         contacts = NULL;
     }
 
+    return 0;
 }
 
-void extractContacts(Contact **contacts ,int *pSize){
+int extractContacts(Contact **contacts ,int *pSize){
 
 
     FILE *pFile = fopen("Contact-Manager/contacts.txt" , "r");
     if(pFile == NULL){
-        printf("Could Not open File");
+        printf("\nCould Not open File\n\n");
         fclose(pFile);
-        return;
+        return 1;
     }
 
     if((*contacts) != NULL){ // freeing if not free
@@ -140,8 +144,8 @@ void extractContacts(Contact **contacts ,int *pSize){
 
     *contacts = malloc(sizeof(Contact));
     if((*contacts) == NULL){
-        printf("Allocation Initialization failed\n");
-        return;
+        printf("\nAllocation Initialization failed\n");
+        return 1;
     }
 
     
@@ -150,8 +154,8 @@ void extractContacts(Contact **contacts ,int *pSize){
     int currentPoint = 0;
 
     if(fgets(buffer , sizeof(buffer) , pFile) == NULL){
-        printf("Empty.\n");
-        return;
+        // printf("\n*** WARNING : NO CONTACT SAVED ***\n\n");
+        return 0;
     }
 
     do{
@@ -160,10 +164,6 @@ void extractContacts(Contact **contacts ,int *pSize){
         
         // saving to array
         sscanf(buffer , "%216[^,],%15[^,],%216[^\n]" ,(*contacts)[currentPoint].name ,(*contacts)[currentPoint].number ,(*contacts)[currentPoint].email);
-        printf("Checkpoint Extraction");
-        
-        
-
         currentPoint++; 
 
         
@@ -189,8 +189,8 @@ void extractContacts(Contact **contacts ,int *pSize){
     // reallocating to remove the extra memory added in last iteration
     temp = realloc(*contacts , (currentPoint)*sizeof(Contact));
     if(temp == NULL){
-        printf("Realloc Failed , Extra memory allocated\n");
-        return;
+        printf("Realloc Failed\n");
+        return 1;
     }
     *contacts = temp;
     temp = NULL;
@@ -200,6 +200,8 @@ void extractContacts(Contact **contacts ,int *pSize){
     
 
     fclose(pFile);
+
+    return 0;
 }
 
 void pushContacts(Contact *contacts ,int *pSize){
@@ -220,6 +222,9 @@ void pushContacts(Contact *contacts ,int *pSize){
     }
 
     fclose(pFile);
+    printf("\n========================");
+    printf("\n***Saved Successfully***");
+    printf("\n========================\n\n");
 
 }
 
@@ -229,17 +234,21 @@ void editContact(Contact *contacts , int *pSize){
     const int SIZE = *pSize;
 
     if(SIZE == 0 || contacts == NULL){
-        printf("\nNo Contacts Found.\n");
+        printf("\n=====================\n");
+        printf("\n**No Contacts Found**\n");
+        printf("\n=====================\n");
         return;
     }
 
     char name[216] = "";
     char number[15] = "";
 
-    printf("Enter Contact Name To Edit : ");
+    printf("\n");
+    printf("[*] Enter Contact *Name* To Edit : ");
     scanf("%s" , name);
     getchar();
-    printf("Enter Contact Number To Edit : ");
+    printf("\n");
+    printf("[*] Enter Contact *Number* To Edit : ");
     scanf("%s" , number);
     getchar();
 
@@ -249,33 +258,39 @@ void editContact(Contact *contacts , int *pSize){
 
         if( !(strcmp(contacts[i].name , name)) && !(strcmp(contacts[i].number , number)) ){
             int choice = 0;
+            printf("\n===================================\n");
             printf("\n***What would you like to edit ?***\n");
             printf("*[1] Name\n*[2] Number\n*[3] Email\n");
-            printf("Select one of the choices : ");
+            printf("\n===================================\n\n");
+            printf("[*] Select one of the choices : ");
             scanf("%d" , &choice);
             getchar(); 
 
             switch(choice){
                 case 1 : 
                     
-                    printf("Enter new name : ");
+                    printf("\n==================\n");
+                    printf("Enter new *name* : ");
                     scanf("%s" , contacts[i].name);
+                    printf("\n==================\n\n");
                     break;
                     
                 case 2 : 
-                    
-                    printf("Enter new number : ");
+                    printf("\n====================\n");
+                    printf("Enter new *number* : ");
                     scanf("%s" , contacts[i].number);
+                    printf("\n====================\n\n");
                     break;
                     
                 case 3 : 
-                    
-                    printf("Enter new email : ");
+                    printf("\n===================\n");
+                    printf("Enter new *email* : ");
                     scanf("%s" , contacts[i].email);
+                    printf("\n===================\n\n");
                     break;
                 
                 default :
-                    printf("Invalid Choice.");
+                    printf("\n***Invalid Choice***\n");
                     
             }
 
@@ -287,7 +302,9 @@ void editContact(Contact *contacts , int *pSize){
 
     }
 
-    printf("Contact not found\n");
+    printf("\n=========---=========\n");
+    printf("**Contact not found**\n");
+    printf("=========---=========\n\n");
 
 
 
@@ -300,17 +317,19 @@ void deleteContact(Contact **contacts , int *pSize){
     const int SIZE = *pSize;
 
     if(SIZE == 0 || *contacts == NULL){
-        printf("\nNo Contacts Found.\n");
+        printf("\n=======================\n");
+        printf("***No Contacts Found***\n");
+        printf("=======================\n\n");
         return;
     }
 
     char name[216] = "";
     char number[15] = "";
 
-    printf("Enter Contact Name To Delete : ");
+    printf("[*] Enter Contact *Name* To Delete : ");
     scanf("%s" , name);
     getchar();
-    printf("Enter Contact Number To Delete : ");
+    printf("[*] Enter Contact *Number* To Delete : ");
     scanf("%s" , number);
     getchar();
 
@@ -323,7 +342,9 @@ void deleteContact(Contact **contacts , int *pSize){
 
         if( !(strcmp((*contacts)[i].name , name)) && !(strcmp((*contacts)[i].number , number)) ){ 
 
-            printf("\n**Contact Found**\n\n");
+            printf("\n===================\n");
+            printf("**Contact Found**\n");
+            printf("===================\n\n");
 
             // moving all next contacts one step back
             while(i < (SIZE - 1) ){
@@ -338,7 +359,7 @@ void deleteContact(Contact **contacts , int *pSize){
             // reallocating to a smaller size (removing last element after shifts)
             // if only one contact left , then handling for it
             if(SIZE == 1){
-                printf("Only 1 Contact , Can not Realloc to 0 , returns NULL\n");
+                // to deal with a single contact 
                 free(*contacts);
                 *contacts = NULL;
                 *pSize = 0;
@@ -347,7 +368,7 @@ void deleteContact(Contact **contacts , int *pSize){
             }else{
                 Contact *temp = realloc(*contacts , (SIZE-1) * (sizeof(Contact)));
                 if(temp == NULL){
-                    printf("Realloc failed , Deletion successful but Last contact repeated\n");
+                    printf("Realloc failed - Deletion\n");
                     return;
                 }
                 *contacts = temp;
@@ -359,8 +380,9 @@ void deleteContact(Contact **contacts , int *pSize){
 
             
             pushContacts(*contacts , pSize);
-            printf("\n*** Contact Deleted ***\n\n"); 
-
+            printf("\n=======================\n");
+            printf("*** Contact Deleted ***\n"); 
+            printf("=======================\n\n");
 
             return;
         }
@@ -369,7 +391,9 @@ void deleteContact(Contact **contacts , int *pSize){
 
     }
 
-    printf("Contact Not Found.\n");
+    printf("\n=======================\n");
+    printf("***Contact Not Found***\n");
+    printf("=======================\n");
 
     
 }
@@ -379,12 +403,14 @@ void searchContact(Contact *contacts , int *pSize){
     const int SIZE = *pSize;
 
     if(SIZE == 0 || contacts == NULL){
-        printf("\nNo Contacts Found.\n");
+        printf("\n==================\n");
+        printf("No Contacts Found.\n");
+        printf("==================\n\n");
         return;
     }
 
     char name[216] = "";
-    printf("Search Contact Name : ");
+    printf("[*] Search Contact Name : ");
     scanf("%s" , name);
     getchar();
 
@@ -392,7 +418,9 @@ void searchContact(Contact *contacts , int *pSize){
 
     for (int i = 0 ; i < SIZE; i++){
         if(!(strcmp(contacts[i].name , name))){
-            printf("\n=== FOUND CONTACT ===\n\n");
+            printf("\n=====================\n");
+            printf("=== FOUND CONTACT ===\n");
+            printf("=====================\n\n");
 
             printf("---------------------------------------------------\n\n");
             printf("Name : %s\nNumber : %s\nEmail : %s\n\n" , contacts[i].name , contacts[i].number , contacts[i].email);
@@ -400,8 +428,9 @@ void searchContact(Contact *contacts , int *pSize){
         }
     }
 
+    printf("---------------------------------------------------\n");
+    printf("\n\n***END***\n");
     printf("---------------------------------------------------\n\n");
-    printf("\n\n***END***\n\n");
 
 
 
@@ -415,19 +444,18 @@ void addContact(Contact **contacts , int *pSize){
     char number[15] = "";
     char email[216] = "";
 
-    printf("Enter the Name : \n");
+    printf("\n[*] Enter the Name : ");
     scanf("%s" , name);
     getchar();
-    printf("Enter the Number : \n");
+    printf("\n[*] Enter the Number : ");
     scanf("%s" , number);
     getchar();
-    printf("Enter the Email : \n");
+    printf("\n[*] Enter the Email : ");
     scanf("%s" , email);
     getchar();
 
     int newPos = *pSize;
 
-    printf("%d" , newPos);
 
     Contact *temp = realloc(*contacts , ((newPos+1) * sizeof(Contact)));
 
@@ -435,6 +463,7 @@ void addContact(Contact **contacts , int *pSize){
 
     if(temp == NULL){
         printf("Could Not Add Contact , Reallocation Failed.\n");
+        return;
     }else{
         *contacts = temp;
         temp = NULL;
@@ -452,7 +481,9 @@ void addContact(Contact **contacts , int *pSize){
         // Pushing the updates to the text file.
         pushContacts(*contacts , pSize);
         
+        printf("=====================");
         printf("\n**Contact Added**\n");
+        printf("=====================\n\n");
     }
 
     
@@ -465,7 +496,9 @@ void displayContacts(Contact *contacts , int *pSize){
     const int SIZE = *pSize;
 
     if(SIZE == 0 || contacts == NULL){
-        printf("\nNo Contacts Found.\n");
+        printf("\n\n=========================");
+        printf("\n**No Contacts Found**\n");
+        printf("=========================\n\n");
         return;
     }
 
@@ -478,12 +511,13 @@ void displayContacts(Contact *contacts , int *pSize){
 
             printf("---------------------------------------------------\n\n");
             // Segmentation fault here - illigal memory access 
-            printf("Name : %s\nNumber : %s\nEmail : %s\n\n" , contacts[i].name , contacts[i].number , contacts[i].email);
+            printf("[*] Name : %s\n[*] Number : %s\n[*] Email : %s\n\n\n" , contacts[i].name , contacts[i].number , contacts[i].email);
 
         }
 
-        printf("---------------------------------------------------\n\n");
+        printf("---------------------------------------------------");
         printf("\n\n***END***\n\n");
+        printf("---------------------------------------------------\n\n");
     }
 
 }
